@@ -2,9 +2,9 @@
 
 namespace Viber;
 
-use Viber\Api\Message;
 use Viber\Api\Event\Type;
 use Viber\Api\Exception\ApiException;
+use Viber\Api\Message;
 
 /**
  * Simple rest client for Viber public account (PA)
@@ -37,12 +37,19 @@ class Client
     protected $http;
 
     /**
+     * Proxy url
+     *
+     * @var string
+     */
+    protected $proxy;
+
+    /**
      * Create api client. Options:
      * token  required  string  authentication token
      * http   optional  array   adapter parameters
      *
      * @throws \Viber\Api\Exception\ApiException
-     * @param array $options
+     * @param  array                             $options
      */
     public function __construct($options)
     {
@@ -57,6 +64,7 @@ class Client
             $httpInit = array_merge($options['http'], $httpInit);
         }
         $this->http = new \GuzzleHttp\Client($httpInit);
+        $this->proxy = isset($options['proxy']) ? $options['proxy'] : null;
     }
 
     /**
@@ -70,11 +78,21 @@ class Client
     }
 
     /**
+     * Get proxy
+     *
+     * @return string
+     */
+    public function getProxy()
+    {
+        return $this->proxy;
+    }
+
+    /**
      * Call api method
      *
      * @throws \Viber\Api\Exception\ApiException
-     * @param  string $method method name
-     * @param  mixed $data method data
+     * @param  string                            $method method name
+     * @param  mixed                             $data   method data
      * @return \Viber\Api\Response
      */
     public function call($method, $data)
@@ -84,8 +102,10 @@ class Client
                 'headers' => [
                     'X-Viber-Auth-Token' => $this->token
                 ],
-                'json' => $data
+                'json' => $data,
+                'proxy' => $this->getProxy()
             ]);
+
             return \Viber\Api\Response::create($response);
         } catch (\RuntimeException $e) {
             throw new ApiException($e->getMessage(), $e->getCode(), $e);
@@ -100,8 +120,8 @@ class Client
      *
      * @see \Viber\Api\Event\Type
      * @throws \Viber\Api\Exception\ApiException
-     * @param string $url webhook url
-     * @param array|null $eventTypes subscribe to certain events
+     * @param  string                            $url        webhook url
+     * @param  array|null                        $eventTypes subscribe to certain events
      * @return \Viber\Api\Response
      */
     public function setWebhook($url, $eventTypes = null)
@@ -138,7 +158,7 @@ class Client
      * for each user ID.
      *
      * @throws \Viber\Api\Exception\ApiException
-     * @param string $userId
+     * @param  string                            $userId
      * @return \Viber\Api\Response
      */
     public function getUserDetails($userId)
@@ -155,7 +175,7 @@ class Client
      * subscribed to the PA.
      *
      * @throws \Viber\Api\Exception\ApiException
-     * @param  array $userIds list of user ids
+     * @param  array                             $userIds list of user ids
      * @return \Viber\Api\Response
      */
     public function getOnlineStatus(array $userIds)
@@ -168,7 +188,7 @@ class Client
     /**
      * Send messages to Viber users who subscribe to the PA.
      *
-     * @param  \Viber\Api\Message $message
+     * @param  \Viber\Api\Message  $message
      * @return \Viber\Api\Response
      */
     public function sendMessage(Message $message)
