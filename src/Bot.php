@@ -3,11 +3,11 @@
 namespace Viber;
 
 use Closure;
-use Viber\Bot\Manager;
-use Viber\Api\Event;
-use Viber\Api\Signature;
-use Viber\Api\Event\Factory;
 use Viber\Api\Entity;
+use Viber\Api\Event;
+use Viber\Api\Event\Factory;
+use Viber\Api\Signature;
+use Viber\Bot\Manager;
 
 /**
  * Build bot with viber client
@@ -38,7 +38,7 @@ class Bot
      * client \Viber\Client
      *
      * @throws \RuntimeException
-     * @param array $options
+     * @param  array             $options
      */
     public function __construct(array $options)
     {
@@ -79,8 +79,8 @@ class Bot
     /**
      * Register text message handler by PCRE
      *
-     * @param  string $regexp valid regular expression
-     * @param  Closure $handler event handler
+     * @param  string     $regexp  valid regular expression
+     * @param  Closure    $handler event handler
      * @return \Viber\Bot
      */
     public function onText($regexp, \Closure $handler)
@@ -99,7 +99,7 @@ class Bot
     /**
      * Register subscrive event handler
      *
-     * @param  Closure $handler valid function
+     * @param  Closure    $handler valid function
      * @return \Viber\Bot
      */
     public function onSubscribe(\Closure $handler)
@@ -112,9 +112,24 @@ class Bot
     }
 
     /**
+     * Register unsubscribe event handler
+     *
+     * @param  Closure    $handler valid function
+     * @return \Viber\Bot
+     */
+    public function onUnsubscribe(\Closure $handler)
+    {
+        $this->managers[] = new Manager(function (Event $event) {
+            return ($event instanceof \Viber\Api\Event\Unsubscribed);
+        }, $handler);
+
+        return $this;
+    }
+
+    /**
      * Register conversation event handler
      *
-     * @param Closure $handler valid function
+     * @param  Closure    $handler valid function
      * @return \Viber\Bot
      */
     public function onConversation(\Closure $handler)
@@ -129,7 +144,7 @@ class Bot
     /**
      * Register picture message handler
      *
-     * @param Closure $handler event handler
+     * @param  Closure    $handler event handler
      * @return \Viber\Bot
      */
     public function onPicture(\Closure $handler)
@@ -191,7 +206,7 @@ class Bot
      * Start bot process
      *
      * @throws \RuntimeException
-     * @param \Viber\Api\Event $event start bot with some event
+     * @param  \Viber\Api\Event  $event start bot with some event
      * @return \Viber\Bot
      */
     public function run($event = null)
